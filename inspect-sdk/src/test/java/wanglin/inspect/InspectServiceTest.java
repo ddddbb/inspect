@@ -15,7 +15,6 @@ public class InspectServiceTest {
     }
 //异步回调风控结果
     @Test
-    @WarnListener(bizType = "test")
     public void asyncNotify( ) {
 
     }

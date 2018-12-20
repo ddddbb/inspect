@@ -1,6 +1,9 @@
 package wanglin.inspect
 
 import com.alibaba.fastjson.JSON
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+import lombok.Data
 import lombok.extern.slf4j.Slf4j
 import org.junit.After
 import org.junit.Before
@@ -16,18 +19,31 @@ import org.springframework.util.StopWatch
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
-@RunWith(SpringRunner.class)
-@SpringBootTest(classes = InspectApplication.class)
+//@RunWith(SpringRunner.class)
+//@SpringBootTest(classes = InspectApplication.class)
 public class InspectServiceImplTest {
     Logger log = LoggerFactory.getLogger(getClass())
     @Autowired
     InspectService inspectService;
     @Autowired
     Configuration configuration;
+//
+//    @Before
+//    public void setup() {
+//        configuration.bizTypeCache = new ConcurrentHashMap<>([test: new BizType()] as Map);
+//    }
 
-    @Before
-    public void setup() {
-        configuration.bizTypeCache = new ConcurrentHashMap<>([test: new BizType()] as Map);
+
+    @Test
+    public void tt(){
+        Tt tt = new Tt();
+        KryoUtils.toByte(tt)
+    }
+
+    @Data
+    class Tt extends Object{
+        String t1 = "1";
+        String t2;
     }
 
     @Test
