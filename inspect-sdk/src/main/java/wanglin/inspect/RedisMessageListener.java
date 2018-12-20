@@ -19,9 +19,9 @@ import java.util.concurrent.TimeUnit;
 public class RedisMessageListener implements MessageListener, ApplicationContextAware {
 
     @Autowired
-    SyncAdapter syncAdapter;
+    InspectClient inspectClient;
     @Autowired
-    Redisson    redisson;
+    Redisson      redisson;
 
     Long               lockTimeout;
     ApplicationContext applicationContext;
@@ -29,25 +29,24 @@ public class RedisMessageListener implements MessageListener, ApplicationContext
     /**
      * 订阅消费风控结果回调
      * 1，如果本地syncAdapter有exist，则转为同步返回
-     * 2，如果本地syncAdapter没有exist，则获取分布式锁，then调用 InspectNotifyCallback
+     * 2，如果本地syncAdapter没有exist，则获取分布式锁，then调用 AsyncNotifyCallback
      *
      * @param message
      * @param bytes
      */
     public void onMessage(Message message, byte[] bytes) {
         MessageBody messageBody = null;
-        if (null != messageBody && syncAdapter.exist(messageBody.sequence)) {
-            syncAdapter.signal(messageBody.sequence);
+        assert null != messageBody.sequence;
+        if (null != messageBody && inspectClient.isSync(messageBody.sequence)) {
+            inspectClient.signal(messageBody.sequence,messageBody.data);
         } else {
             RLock lock = redisson.getLock("/inpsect/result/" + messageBody.sequence);
             try {
                 if (lock.tryLock(lockTimeout, TimeUnit.MILLISECONDS)) {
-                    try {
-                        applicationContext.getBean(messageBody.getBizType(), InspectNotifyCallback.class).inspectNotify(messageBody.getData());
-                    } catch (BeansException be) {
-                        be.printStackTrace();
-                    }
+                    applicationContext.getBean(messageBody.bizType, AsyncNotifyCallback.class).signal(messageBody.data);
                 }
+            } catch (BeansException e) {
+                e.printStackTrace();
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }

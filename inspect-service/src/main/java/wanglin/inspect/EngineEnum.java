@@ -1,5 +1,5 @@
 package wanglin.inspect;
 
-public enum Engine {
+public enum EngineEnum {
     EL,SCRIPT;
 }

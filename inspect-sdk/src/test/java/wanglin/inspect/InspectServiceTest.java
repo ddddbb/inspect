@@ -11,7 +11,7 @@ public class InspectServiceTest {
     @Test
     public void sync() throws TimeoutException {
 //        同步检测结果
-        inspectService.inspect("",null);
+        inspectService.inspect("",1l,null);
     }
 //异步回调风控结果
     @Test

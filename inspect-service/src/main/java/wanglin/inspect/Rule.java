@@ -7,16 +7,16 @@ import java.util.Set;
 
 @Data
 public class Rule {
-    String     id;
-    Engine     engine;
-    String     name;
-    Object     context;
+    String      id;
+    EngineEnum  engine;
+    String      name;
+    Object      context;
     Set<String> varNames;
 
     public Rule() {
 
     }
-    public Rule(Engine engine, String name, Object context) {
+    public Rule(EngineEnum engine, String name, Object context) {
         this.engine = engine;
         this.name = name;
         this.context = context;

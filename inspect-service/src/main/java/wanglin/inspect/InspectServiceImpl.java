@@ -25,8 +25,8 @@ public class InspectServiceImpl implements InspectService {
     ExecutorService es;
 
     @Override
-    public void inspect(String bizType, Object request) {
-        InspectContext context = inspectService.createInspectContext(bizType, request);
+    public void inspect(String bizType,long sequence, Object request) {
+        InspectContext context = inspectService.createInspectContext(bizType,sequence, request);
 //        log.info("受理检测请求{},{},{}", context.id, context.bizType, context, request);
         contextService.saveInspectContext(context);
         context.vars.forEach((var, task) -> {
@@ -56,11 +56,11 @@ public class InspectServiceImpl implements InspectService {
 
 
 
-    public InspectContext createInspectContext(String bizType, Object request) {
+    public InspectContext createInspectContext(String bizType,long sequence, Object request) {
         BizType bzType = configuration.getBizType(bizType);
         Set<Rule> rules = configuration.getRules(bizType);
         Set<Var> vars = configuration.getVars(bizType);
-        return new InspectContext("" + snowflakeIdWorker.nextId(), bzType, request, rules, vars);
+        return new InspectContext("" + sequence, bzType, request, rules, vars);
     }
 
     ///////////////////////////////////////////////////////////

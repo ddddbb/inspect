@@ -49,9 +49,9 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
         return bean;
     }
 
-    public EngineService getEngine(Engine engine) {
+    public EngineService getEngine(EngineEnum engine) {
         assert null != engine : "Engine不能为空";
-        if(engine == Engine.EL){
+        if(engine == EngineEnum.EL){
             return elEngine;
         }else{
             return null;
@@ -77,7 +77,7 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
     public void afterPropertiesSet() throws Exception {
         bizTypeCache.put("test", new BizType());
         Set<Rule> rules = new HashSet<>();
-        rules.add(new Rule(Engine.EL,"测试规则","req.name == 'wanglin'"));
+        rules.add(new Rule(EngineEnum.EL,"测试规则","req.name == 'wanglin'"));
         ruleCache.put("test",rules);
     }
 
