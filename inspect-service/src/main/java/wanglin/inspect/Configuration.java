@@ -24,7 +24,7 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
     @Autowired
     AnyTrueResultProcessor defaultResultProcessor;
     @Autowired
-    ExistOrRulesFinishCallbackProcessor defaultCallbackProcessor;
+    RedisCallbackProcessor defaultCallbackProcessor;
     EngineService elEngine = new ELEngineService();
     private ApplicationContext applicationContext;
 
@@ -81,12 +81,6 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
         ruleCache.put("test",rules);
     }
 
-    public CallbackProcessor getCallbackProcessor(String callbackProcessor) {
-        if(StringUtils.isEmpty(callbackProcessor))return defaultCallbackProcessor;
-        CallbackProcessor bean = applicationContext.getBean(callbackProcessor,CallbackProcessor.class);
-        if (null == bean) return defaultCallbackProcessor;
-        return bean;
-    }
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

@@ -3,28 +3,30 @@ package wanglin.inspect;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import wanglin.inspect.sdk.SnowflakeIdWorker;
 
-import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.stream.Collectors;
 
 @Service
 @Slf4j
 public class InspectServiceImpl implements InspectService {
     static SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker(0, 0);
     @Autowired
-    Configuration   configuration;
+    Configuration  configuration;
     @Autowired
-    ContextService  contextService;
+    ContextService contextService;
     @Autowired
-    ExecutorService es;
+    RedisTemplate  redisTemplate;
+    @Autowired
+    RedisCallbackProcessor callbackProcessor;
 
     @Override
-    public void inspect(String bizType, long sequence, Object request) {
+    public void inspect(String bizType, Long sequence, Object request) {
         InspectContext context = createInspectContext(bizType, sequence, request);
 //        log.info("受理检测请求{},{},{}", context.id, context.bizType, context, request);
         contextService.saveInspectContext(context);
@@ -39,7 +41,7 @@ public class InspectServiceImpl implements InspectService {
 
     @Override
     @Async
-    public void varValueNotify(long sequence, String varName, Object value) {
+    public void varValueNotify(Long sequence, String varName, Object value) {
 //        性能消耗最大的就是这行日志了
         log.debug("收到变量回调{},{},{}", sequence, varName, value instanceof Exception ? ((Exception) value).getMessage() : value);
         InspectContext context = contextService.getInspectContext(sequence);
@@ -47,20 +49,26 @@ public class InspectServiceImpl implements InspectService {
         executeRules(varName, context);
         //set request result
         if (context.allRuleOver()) {
-            configuration.getRuleResultProcessor(context.bizType.resultProcessorName).processResult(context);
+            configuration.getRuleResultProcessor(context.bizType.resultProcessorStrategy).processResult(context);
 
             log.info("交易{}:{}检测结果", context.bizType.name, sequence, context.result);
             context.rules.forEach((rule, task) -> {
                 log.info("规则{}结果:{}", rule.id, task);
             });
             if (!context.hasCallback()) {
-                configuration.getCallbackProcessor(context.bizType.callbackProcessor).callback(context);
+                callbackProcessor.callback(context);
             }
         }
     }
 
     @Override
-    public InspectResult query(long sequence) {
+    public InspectResult query(Long sequence) {
+        Object result = redisTemplate.opsForValue().get(sequence);
+//        if (StringUtils.isEmpty(ctx.)) {
+//            return InspectResult.NONE;
+//        } else {
+//            return null;
+//        }
         return null;
     }
 
@@ -74,8 +82,8 @@ public class InspectServiceImpl implements InspectService {
 
 
     public void executeRules(String varName, InspectContext context) {
-        context.rules.forEach((rule,task) -> {
-            if(rule.containVar(varName) && task.status == Task.TaskStatus.INIT) {
+        context.rules.forEach((rule, task) -> {
+            if (rule.containVar(varName) && task.status == Task.TaskStatus.INIT) {
                 try {
                     EngineService engine      = configuration.getEngine(rule.engine);
                     Object        ruleContext = engine.buildRuleContext(context);

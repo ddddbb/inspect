@@ -9,10 +9,10 @@ import wanglin.inspect.sdk.MessageBody;
 
 @Slf4j
 @Service
-public class ExistOrRulesFinishCallbackProcessor implements CallbackProcessor {
+public class RedisCallbackProcessor  {
     @Autowired
     private RedisTemplate redisTemplate;
-    @Override
+
     public void callback(InspectContext context) {
         if(null != context.result){
 //            log.info("{}检测结果:{}",context.id, JSON.toJSONString(context.result));

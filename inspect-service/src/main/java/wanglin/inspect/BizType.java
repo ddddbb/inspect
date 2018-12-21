@@ -3,8 +3,7 @@ package wanglin.inspect;
 public class BizType {
     public String name;
     public Integer timeout;
-    public String resultProcessorName;
-    public String callbackProcessor;
+    public String resultProcessorStrategy ;
 
     @Override
     public String toString() {

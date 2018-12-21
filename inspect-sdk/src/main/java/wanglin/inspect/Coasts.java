@@ -10,6 +10,11 @@ public interface Coasts {
     public interface TOPIC {
         String INSPECT_RESULT = "inspect_result";
     }
+
+    public interface CACHE {
+        String CONTEXT_STATUS = "/context_status/";
+    }
+
     public interface Ctx {
         String ID = "id";
         String BIZ_TYPE = "type";
