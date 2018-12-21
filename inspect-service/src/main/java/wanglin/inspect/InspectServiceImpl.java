@@ -32,9 +32,9 @@ public class InspectServiceImpl implements InspectService {
         contextService.saveInspectContext(context);
         context.vars.forEach((var, task) -> {
             try {
-                configuration.getVarHandler(var.handlerName).handle(context.id, var.name, context.bizType, context.request);
+                configuration.getVarHandler(var.handlerName).handle(context.sequence, var.name, context.bizType, context.request);
             } catch (Exception ee) {
-                varValueNotify(context.id, var.name, ee);
+                varValueNotify(context.sequence, var.name, ee);
             }
         });
     }

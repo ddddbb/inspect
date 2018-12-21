@@ -75,6 +75,7 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        //TODO
         bizTypeCache.put("test", new BizType());
         Set<Rule> rules = new HashSet<>();
         rules.add(new Rule(EngineEnum.EL,"测试规则","req.name == 'wanglin'"));

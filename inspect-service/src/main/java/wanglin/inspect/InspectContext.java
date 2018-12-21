@@ -9,16 +9,18 @@ import java.util.Set;
 
 @Data
 public class InspectContext {
-    long id;
-    BizType bizType;
-    Object request;
-    Object result;
+    Long          sequence;
+    InspectStatus inspectStatus;
+    BizType       bizType;
+    Object        request;
+    Object        result;
 
     Map<Rule, Task> rules;
-    Map<Var, Task> vars;
+    Map<Var, Task>  vars;
 
-    public InspectContext(long id, BizType bizType, Object request, Set<Rule> rules, Set<Var> vars) {
-        this.id = id;
+    public InspectContext(long sequence, BizType bizType, Object request, Set<Rule> rules, Set<Var> vars) {
+        this.sequence = sequence;
+        this.inspectStatus = InspectStatus.ING;
         this.bizType = bizType;
         this.request = request;
         this.rules = new HashMap<>();
@@ -32,8 +34,8 @@ public class InspectContext {
             vars.forEach(var -> {
                 this.vars.put(var, new Task());
             });
-            this.vars.put(new Var("" + Integer.MAX_VALUE, Coasts.Ctx.BIZ_TYPE, Coasts.VarHandler.RequestHandler), new Task());
-            this.vars.put(new Var("" + (Integer.MAX_VALUE - 1), Coasts.Ctx.REQUEST, Coasts.VarHandler.RequestHandler), new Task());
+            this.vars.put(new Var("" + Integer.MAX_VALUE, Coasts.Ctx.BIZ_TYPE, Coasts.VarHandler.RequestHandler, null), new Task());
+            this.vars.put(new Var("" + (Integer.MAX_VALUE - 1), Coasts.Ctx.REQUEST, Coasts.VarHandler.RequestHandler, null), new Task());
         }
     }
 
@@ -53,7 +55,6 @@ public class InspectContext {
             //todo
         }
     }
-
 
 
     public void setRule(Rule rule, Object value) {

@@ -26,7 +26,7 @@ public class ContextService {
     }
 
     private void saveToCache(InspectContext context) {
-        cache.put(context.id,context);
+        cache.put(context.sequence,context);
     }
 
     private void saveToRedis(InspectContext context) {

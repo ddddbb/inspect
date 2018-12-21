@@ -13,7 +13,5 @@ public class InspectResult {
         this.result = result;
     }
 
-    public enum InspectStatus{
-        NONE,ING,FINISHED
-    }
+
 }

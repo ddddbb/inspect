@@ -33,7 +33,7 @@ public class ELEngineService implements EngineService {
     @Override
     public Object buildRuleContext(InspectContext context) {
         Map<String,Object> ctx = new HashMap<>();
-        ctx.put(Coasts.Ctx.ID,context.getId());
+        ctx.put(Coasts.Ctx.ID,context.getSequence());
         ctx.put(Coasts.Ctx.REQUEST,context.getRequest());
         ctx.put(Coasts.Ctx.BIZ_TYPE,context.getBizType());
         //TODO

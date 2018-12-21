@@ -18,7 +18,7 @@ public class RedisCallbackProcessor  {
 //            log.info("{}检测结果:{}",context.id, JSON.toJSONString(context.result));
             redisTemplate.convertAndSend(Coasts.TOPIC.INSPECT_RESULT,new MessageBody(
                     context.bizType.name,
-                    context.id,
+                    context.sequence,
                     context.result
             ));
         }
