@@ -7,17 +7,17 @@ import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class ContextService {
-    ConcurrentMap<String,InspectContext> cache = new ConcurrentHashMap<>();
+    ConcurrentMap<Long,InspectContext> cache = new ConcurrentHashMap<>();
     public void saveInspectContext(InspectContext context) {
         saveToCache(context);
         saveToRedis(context);
     }
 
 
-    protected InspectContext getInspectContext(String uuid) {
-        InspectContext context = getFromCache(uuid);
+    protected InspectContext getInspectContext(long sequence) {
+        InspectContext context = getFromCache(sequence);
         if(null == context) {
-            context = getFromRedis(uuid);
+            context = getFromRedis(sequence);
         }
         if(null == context){
             throw new RuntimeException("无此检测快照");
@@ -33,11 +33,11 @@ public class ContextService {
 
     }
 
-    private InspectContext getFromCache(String uuid) {
-        return cache.get(uuid);
+    private InspectContext getFromCache(Long sequence) {
+        return cache.get(sequence);
     }
 
-    private InspectContext getFromRedis(String uuid) {
+    private InspectContext getFromRedis(Long sequence) {
         return null;
     }
 

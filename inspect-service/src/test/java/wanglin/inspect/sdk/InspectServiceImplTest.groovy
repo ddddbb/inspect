@@ -1,22 +1,16 @@
-package wanglin.inspect
+package wanglin.inspect.sdk
 
 import com.alibaba.fastjson.JSON
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import lombok.Data
-import lombok.extern.slf4j.Slf4j
 import org.junit.After
-import org.junit.Before
 import org.junit.Test
-import org.junit.runner.RunWith
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.boot.test.context.SpringBootTest
-import org.springframework.test.context.junit4.SpringRunner
 import org.springframework.util.StopWatch
+import wanglin.inspect.Configuration
+import wanglin.inspect.InspectService
 
-import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.TimeUnit
 
 //@RunWith(SpringRunner.class)
@@ -35,19 +29,19 @@ public class InspectServiceImplTest {
 
 
     @Test
-    public void tt(){
+    public void tt() {
         Tt tt = new Tt();
         KryoUtils.toByte(tt)
     }
 
     @Data
-    class Tt extends Object{
+    class Tt extends Object {
         String t1 = "1";
         String t2;
     }
 
     @Test
-    public void testLog(){
+    public void testLog() {
         // 创建一个计时器
         StopWatch watch = new StopWatch();
         // 计时器开始
@@ -59,14 +53,15 @@ public class InspectServiceImplTest {
 
         // 计时器停止
         watch.stop();
-        println("花费时间："+watch.getTotalTimeMillis()+"毫秒")
+        println("花费时间：" + watch.getTotalTimeMillis() + "毫秒")
     }
+
     @Test
     public void inspect() {
         Long s = System.nanoTime();
         100000.times {
             try {
-                inspectService.inspect("test", [name:'wanglilin'] as Map)
+                inspectService.inspect("test", 1l, [name: 'wanglilin'] as Map)
             } catch (Exception e) {
                 e.printStackTrace()
             }

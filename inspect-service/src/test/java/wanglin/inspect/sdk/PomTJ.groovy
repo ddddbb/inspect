@@ -1,4 +1,4 @@
-package wanglin.inspect
+package wanglin.inspect.sdk
 
 import com.alibaba.fastjson.JSON
 import org.junit.Test

@@ -3,10 +3,11 @@ package wanglin.inspect;
 public class Task {
     Object     result;
     TaskStatus status = TaskStatus.INIT;
+
     public void setResult(Object value) {
         if (value instanceof Throwable) {
             status = TaskStatus.EXCEPTION;
-            this.result = ((Throwable)value).getMessage();
+            this.result = ((Throwable) value).getMessage();
         } else {
             status = TaskStatus.COMPLETED;
             this.result = value;
@@ -23,7 +24,7 @@ public class Task {
     }
 
     public enum TaskStatus {
-        INIT,COMPLETED ,EXCEPTION;
+        INIT, COMPLETED, EXCEPTION;
     }
 
 

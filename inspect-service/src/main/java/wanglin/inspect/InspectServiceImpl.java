@@ -5,6 +5,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import wanglin.inspect.sdk.SnowflakeIdWorker;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,52 +16,59 @@ import java.util.concurrent.ExecutorService;
 public class InspectServiceImpl implements InspectService {
     static SnowflakeIdWorker snowflakeIdWorker = new SnowflakeIdWorker(0, 0);
     @Autowired
-    Configuration configuration;
+    Configuration   configuration;
     @Autowired
-    ContextService contextService;
-    @Autowired
-
-    InspectServiceImpl inspectService;
+    ContextService  contextService;
     @Autowired
     ExecutorService es;
 
     @Override
-    public void inspect(String bizType,long sequence, Object request) {
-        InspectContext context = inspectService.createInspectContext(bizType,sequence, request);
+    public void inspect(String bizType, long sequence, Object request) {
+        InspectContext context = createInspectContext(bizType, sequence, request);
 //        log.info("受理检测请求{},{},{}", context.id, context.bizType, context, request);
         contextService.saveInspectContext(context);
         context.vars.forEach((var, task) -> {
             try {
                 configuration.getVarHandler(var.handlerName).handle(context.id, var.name, context.bizType, context.request);
             } catch (Exception ee) {
-                inspectService.varValueNotify(context.id, var.name, ee);
+                varValueNotify(context.id, var.name, ee);
             }
         });
     }
 
     @Override
     @Async
-    public void varValueNotify(String id, String varName, Object value) {
+    public void varValueNotify(long sequence, String varName, Object value) {
 //        性能消耗最大的就是这行日志了
-        log.debug("收到变量回调{},{},{}", id, varName, value instanceof Exception ? ((Exception) value).getMessage() : value);
-        InspectContext context = contextService.getInspectContext(id);
+        log.debug("收到变量回调{},{},{}", sequence, varName, value instanceof Exception ? ((Exception) value).getMessage() : value);
+        InspectContext context = contextService.getInspectContext(sequence);
         context.setVarByName(varName, value);
-        inspectService.executeRules(varName, context);
+        executeRules(varName, context);
         //set request result
+        if (context.allRuleOver()) {
+            configuration.getRuleResultProcessor(context.bizType.resultProcessorName).processResult(context);
 
-        configuration.getRuleResultProcessor(context.bizType.resultProcessorName).process(context);
-        if (null != context.result) {
-            configuration.getCallbackProcessor(context.bizType.callbackProcessor).callback(context);
+            log.info("交易{}:{}检测结果",context.bizType.name,sequence,context.result);
+            context.rules.forEach((rule,task)->{
+                log.info("规则{}结果:{}",rule.id,task);
+            });
+            if(!context.hasCallback()) {
+                configuration.getCallbackProcessor(context.bizType.callbackProcessor).callback(context);
+            }
         }
     }
 
+    @Override
+    public InspectResult query(long sequence) {
+        return null;
+    }
 
 
-    public InspectContext createInspectContext(String bizType,long sequence, Object request) {
-        BizType bzType = configuration.getBizType(bizType);
-        Set<Rule> rules = configuration.getRules(bizType);
-        Set<Var> vars = configuration.getVars(bizType);
-        return new InspectContext("" + sequence, bzType, request, rules, vars);
+    public InspectContext createInspectContext(String bizType, long sequence, Object request) {
+        BizType   bzType = configuration.getBizType(bizType);
+        Set<Rule> rules  = configuration.getRules(bizType);
+        Set<Var>  vars   = configuration.getVars(bizType);
+        return new InspectContext( sequence, bzType, request, rules, vars);
     }
 
     ///////////////////////////////////////////////////////////
@@ -68,12 +76,11 @@ public class InspectServiceImpl implements InspectService {
         Set<Rule> rules = relationRules(context, varName);
         rules.forEach(rule -> {
             try {
-                EngineService engine = configuration.getEngine(rule.engine);
-                Object ruleContext = engine.buildRuleContext(context);
-                Object ruleResult = engine.execute(rule, ruleContext);
+                EngineService engine      = configuration.getEngine(rule.engine);
+                Object        ruleContext = engine.buildRuleContext(context);
+                Object        ruleResult  = engine.execute(rule, ruleContext);
                 context.setRule(rule, ruleResult);
-            } catch (Exception e) {
-                e.printStackTrace();
+            } catch (Throwable e) {
                 context.setRule(rule, e);
             }
         });
@@ -81,7 +88,7 @@ public class InspectServiceImpl implements InspectService {
 
     public Set<Rule> relationRules(InspectContext context, String varName) {
         Set<Rule> rules = context.getRules().keySet();
-        Set<Rule> rrs = new HashSet<>();
+        Set<Rule> rrs   = new HashSet<>();
 //
 //        rules.forEach(rule -> {
 //            if (rule.containVar(varName)) {

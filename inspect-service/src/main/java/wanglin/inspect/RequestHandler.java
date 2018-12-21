@@ -10,12 +10,12 @@ public class RequestHandler implements VarHandler {
     InspectService inspectService;
     @Override
     @Async
-    public void handle(String uuid, String varName, BizType bizType, Object request) {
+    public void handle(Long sequence, String varName, BizType bizType, Object request) {
         if(bizType.name.equals(Coasts.Ctx.BIZ_TYPE)) {
-            inspectService.varValueNotify(uuid, Coasts.Ctx.BIZ_TYPE, bizType);
+            inspectService.varValueNotify(sequence, Coasts.Ctx.BIZ_TYPE, bizType);
         }
         if(bizType.name.equals(Coasts.Ctx.REQUEST)) {
-            inspectService.varValueNotify(uuid, Coasts.Ctx.REQUEST, request);
+            inspectService.varValueNotify(sequence, Coasts.Ctx.REQUEST, request);
         }
     }
 }

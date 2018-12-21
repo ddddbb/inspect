@@ -1,5 +1,5 @@
 package wanglin.inspect;
 
 public interface RuleResultProcessor {
-    void process(InspectContext context);
+    void processResult(InspectContext context);
 }

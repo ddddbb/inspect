@@ -1,6 +1,6 @@
 package wanglin.inspect;
 
 public interface AsyncNotifyCallback {
-    void signal(String data);
+    void signal(Object data);
 
 }

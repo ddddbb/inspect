@@ -7,6 +7,9 @@ public interface Coasts {
         String RequestHandler = "requestHandler";
     }
 
+    public interface TOPIC {
+        String INSPECT_RESULT = "inspect_result";
+    }
     public interface Ctx {
         String ID = "id";
         String BIZ_TYPE = "type";

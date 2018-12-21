@@ -2,17 +2,14 @@ package wanglin.inspect;
 
 
 import lombok.Data;
-import org.apache.commons.beanutils.BeanUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 @Data
 public class InspectContext {
-    String id;
+    long id;
     BizType bizType;
     Object request;
     Object result;
@@ -20,7 +17,7 @@ public class InspectContext {
     Map<Rule, Task> rules;
     Map<Var, Task> vars;
 
-    public InspectContext(String id, BizType bizType, Object request, Set<Rule> rules, Set<Var> vars) {
+    public InspectContext(long id, BizType bizType, Object request, Set<Rule> rules, Set<Var> vars) {
         this.id = id;
         this.bizType = bizType;
         this.request = request;
@@ -58,6 +55,7 @@ public class InspectContext {
     }
 
 
+
     public void setRule(Rule rule, Object value) {
         if (rules.containsKey(rule)) {
             rules.get(rule).setResult(value);
@@ -66,4 +64,11 @@ public class InspectContext {
         }
     }
 
+    public boolean hasCallback() {
+        return false;
+    }
+
+    public boolean allRuleOver() {
+        return rules.values().stream().allMatch(t -> t.status != Task.TaskStatus.INIT);
+    }
 }

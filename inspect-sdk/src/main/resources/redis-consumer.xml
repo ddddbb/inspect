@@ -7,7 +7,7 @@
 
     <!-- 引入jedis配置文件 -->
 
-    <context:component-scan base-package="wanglin.inspect" />
+    <context:component-scan base-package="wanglin.inspect.sdk" />
 
     <!-- spring data redis -->
     <bean id="jedisConnectionFactory" class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory">
@@ -18,7 +18,7 @@
     </bean>
 
 
-    <bean id="redisMessageListener" class="wanglin.inspect.RedisMessageListener"/>
+    <bean id="redisMessageListener" class="wanglin.inspect.sdk.RedisMessageListener"/>
 
     <bean id="redisContainer" class="org.springframework.data.redis.listener.RedisMessageListenerContainer">
         <property name="connectionFactory" ref="jedisConnectionFactory" />
@@ -28,7 +28,7 @@
                     <list>
                         <!-- 普通订阅，订阅具体的频道 -->
                         <bean class="org.springframework.data.redis.listener.ChannelTopic">
-                            <constructor-arg value="${topic.inspect.result}" />
+                            <constructor-arg value="inspect_result" />
                         </bean>
                     </list>
                 </entry>
