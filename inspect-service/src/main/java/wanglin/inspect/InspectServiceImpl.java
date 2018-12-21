@@ -10,6 +10,7 @@ import wanglin.inspect.sdk.SnowflakeIdWorker;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -48,11 +49,11 @@ public class InspectServiceImpl implements InspectService {
         if (context.allRuleOver()) {
             configuration.getRuleResultProcessor(context.bizType.resultProcessorName).processResult(context);
 
-            log.info("交易{}:{}检测结果",context.bizType.name,sequence,context.result);
-            context.rules.forEach((rule,task)->{
-                log.info("规则{}结果:{}",rule.id,task);
+            log.info("交易{}:{}检测结果", context.bizType.name, sequence, context.result);
+            context.rules.forEach((rule, task) -> {
+                log.info("规则{}结果:{}", rule.id, task);
             });
-            if(!context.hasCallback()) {
+            if (!context.hasCallback()) {
                 configuration.getCallbackProcessor(context.bizType.callbackProcessor).callback(context);
             }
         }
@@ -68,34 +69,22 @@ public class InspectServiceImpl implements InspectService {
         BizType   bzType = configuration.getBizType(bizType);
         Set<Rule> rules  = configuration.getRules(bizType);
         Set<Var>  vars   = configuration.getVars(bizType);
-        return new InspectContext( sequence, bzType, request, rules, vars);
+        return new InspectContext(sequence, bzType, request, rules, vars);
     }
 
-    ///////////////////////////////////////////////////////////
+
     public void executeRules(String varName, InspectContext context) {
-        Set<Rule> rules = relationRules(context, varName);
-        rules.forEach(rule -> {
-            try {
-                EngineService engine      = configuration.getEngine(rule.engine);
-                Object        ruleContext = engine.buildRuleContext(context);
-                Object        ruleResult  = engine.execute(rule, ruleContext);
-                context.setRule(rule, ruleResult);
-            } catch (Throwable e) {
-                context.setRule(rule, e);
+        context.rules.forEach((rule,task) -> {
+            if(rule.containVar(varName) && task.status == Task.TaskStatus.INIT) {
+                try {
+                    EngineService engine      = configuration.getEngine(rule.engine);
+                    Object        ruleContext = engine.buildRuleContext(context);
+                    Object        ruleResult  = engine.execute(rule, ruleContext);
+                    context.setRule(rule, ruleResult);
+                } catch (Throwable e) {
+                    context.setRule(rule, e);
+                }
             }
         });
-    }
-
-    public Set<Rule> relationRules(InspectContext context, String varName) {
-        Set<Rule> rules = context.getRules().keySet();
-        Set<Rule> rrs   = new HashSet<>();
-//
-//        rules.forEach(rule -> {
-//            if (rule.containVar(varName)) {
-//                rrs.add(rule);
-//            }
-//        });
-//        return rrs;
-        return rules;
     }
 }
