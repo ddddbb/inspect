@@ -16,8 +16,8 @@ public interface Coasts {
     }
 
     public interface Ctx {
-        String ID = "id";
+        String ID       = "id";
         String BIZ_TYPE = "type";
-        String REQUEST = "req";
+        String REQUEST  = "req";
     }
 }

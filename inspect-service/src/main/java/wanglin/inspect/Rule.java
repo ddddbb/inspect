@@ -11,11 +11,22 @@ public class Rule {
     EngineEnum  engine;
     String      name;
     Object      context;
+    /**
+     * none             DefaultResultProcessorStrategy
+     * true_reject      TrueRejectResultProcessorStrategy
+     * true_pass        TruePassResultProcessorStrategy
+     * XXXAction        SMSResultProcessorStrategy
+     *                  HuoTiResultProcessorStrategy
+     *                  ……
+     *
+     */
+    String      resultProcessorStrategy;
     Set<String> varNames;
 
     public Rule() {
 
     }
+
     public Rule(EngineEnum engine, String name, Object context) {
         this.engine = engine;
         this.name = name;
@@ -23,8 +34,10 @@ public class Rule {
     }
 
     public boolean containVar(String varName) {
-        if(null == varNames || varNames.isEmpty() ) return false;
-        if(StringUtils.isEmpty(varName)) return false;
+        if (null == varNames || varNames.isEmpty()) return false;
+        if (StringUtils.isEmpty(varName)) return false;
         return varNames.contains(varName);
     }
+
+
 }

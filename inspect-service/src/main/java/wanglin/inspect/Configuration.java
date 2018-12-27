@@ -9,6 +9,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import wanglin.inspect.engine.ELEngineService;
+import wanglin.inspect.result.processor.AnyTrueResultProcessor;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -18,9 +19,9 @@ import java.util.concurrent.ConcurrentMap;
 
 @Service
 public class Configuration implements InitializingBean, ApplicationContextAware {
-    ConcurrentMap<String, Set<Rule>> ruleCache = new ConcurrentHashMap<>();
-    ConcurrentMap<String, Set<Var>> varCache = new ConcurrentHashMap<>();
-    ConcurrentMap<String, BizType> bizTypeCache = new ConcurrentHashMap<>();
+    ConcurrentMap<String, Set<Rule>> ruleCache    = new ConcurrentHashMap<>();
+    ConcurrentMap<String, Set<Var>>  varCache     = new ConcurrentHashMap<>();
+    ConcurrentMap<String, BizType>   bizTypeCache = new ConcurrentHashMap<>();
     @Autowired
     AnyTrueResultProcessor defaultResultProcessor;
     @Autowired
@@ -43,24 +44,24 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
         return bean;
     }
 
-    public VarHandler getVarHandler(String varHandler)  {
+    public VarHandler getVarHandler(String varHandler) {
         assert null != varHandler : "varHandler不能为空";
-        VarHandler bean = applicationContext.getBean(varHandler,VarHandler.class);
+        VarHandler bean = applicationContext.getBean(varHandler, VarHandler.class);
         return bean;
     }
 
     public EngineService getEngine(EngineEnum engine) {
         assert null != engine : "Engine不能为空";
-        if(engine == EngineEnum.EL){
+        if (engine == EngineEnum.EL) {
             return elEngine;
-        }else{
+        } else {
             return null;
         }
     }
 
-    public RuleResultProcessor getRuleResultProcessor(String resultProcessorName) {
+    public ResultProcessor getRuleResultProcessor(String resultProcessorName) {
         if (StringUtils.isEmpty(resultProcessorName)) return defaultResultProcessor;
-        RuleResultProcessor bean = applicationContext.getBean(resultProcessorName,RuleResultProcessor.class);
+        ResultProcessor bean = applicationContext.getBean(resultProcessorName, ResultProcessor.class);
         if (null == bean) return defaultResultProcessor;
         return bean;
     }
@@ -78,8 +79,8 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
         //TODO
         bizTypeCache.put("test", new BizType());
         Set<Rule> rules = new HashSet<>();
-        rules.add(new Rule(EngineEnum.EL,"测试规则","req.name == 'wanglin'"));
-        ruleCache.put("test",rules);
+        rules.add(new Rule(EngineEnum.EL, "测试规则", "req.name == 'wanglin'"));
+        ruleCache.put("test", rules);
     }
 
 

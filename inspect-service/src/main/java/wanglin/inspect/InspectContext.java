@@ -9,11 +9,11 @@ import java.util.Set;
 
 @Data
 public class InspectContext {
-    Long          sequence;
-    InspectStatus inspectStatus;
-    BizType       bizType;
-    Object        request;
-    Object        result;
+    public Long          sequence;
+    public InspectStatus inspectStatus;
+    public BizType       bizType;
+    public Object        request;
+    public Object        result;
 
     Map<Rule, Task> rules;
     Map<Var, Task>  vars;
@@ -34,8 +34,8 @@ public class InspectContext {
             vars.forEach(var -> {
                 this.vars.put(var, new Task());
             });
-            this.vars.put(new Var("" + Integer.MAX_VALUE, Coasts.Ctx.BIZ_TYPE, Coasts.VarHandler.RequestHandler, null), new Task());
-            this.vars.put(new Var("" + (Integer.MAX_VALUE - 1), Coasts.Ctx.REQUEST, Coasts.VarHandler.RequestHandler, null), new Task());
+            this.vars.put(new Var("" + Integer.MAX_VALUE, Coasts.Ctx.BIZ_TYPE, Coasts.VarHandler.RequestHandler), new Task());
+            this.vars.put(new Var("" + (Integer.MAX_VALUE - 1), Coasts.Ctx.REQUEST, Coasts.VarHandler.RequestHandler), new Task());
         }
     }
 

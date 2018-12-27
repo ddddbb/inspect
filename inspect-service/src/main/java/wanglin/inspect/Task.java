@@ -1,8 +1,8 @@
 package wanglin.inspect;
 
 public class Task {
-    Object     result;
-    TaskStatus status = TaskStatus.INIT;
+    public Object     result;
+    public TaskStatus status = TaskStatus.INIT;
 
     public void setResult(Object value) {
         if (value instanceof Throwable) {
