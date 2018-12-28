@@ -35,14 +35,6 @@ public class InspectServiceImpl implements InspectService {
                 varValueNotify(context.sequence, var.name, ee);
             }
         });
-        waitForResult(context);
-        log.info("{}检测结果:{}", context.sequence, JSON.toJSONString(context.result));
-        redisTemplate.convertAndSend(Coasts.TOPIC.INSPECT_RESULT, new MessageBody(
-                context.bizType.name,
-                context.sequence,
-                context.result
-        ));
-        //todo 这里有问题
     }
 
     private void waitForResult(InspectContext context) {
