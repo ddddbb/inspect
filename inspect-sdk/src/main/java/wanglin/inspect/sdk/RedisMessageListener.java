@@ -45,10 +45,10 @@ public class RedisMessageListener implements MessageListener, InitializingBean, 
         Assert.notNull(messageBody.sequence, "消息为空");
         if (inspectClient.isLocalSync(messageBody.sequence)) {
             //            唤醒syncMap中的监听器
-            log.debug("同步回调：{}", JSON.toJSONString(messageBody));
+            log.info("同步回调：{}", JSON.toJSONString(messageBody));
             inspectClient.signal(messageBody.sequence, messageBody.data);
         } else {
-            log.debug("异步回调：{}", JSON.toJSONString(messageBody));
+            log.info("异步回调：{}", JSON.toJSONString(messageBody));
             if(asyncCallbackMap.get(messageBody.bizType) == null){
                 log.error("无异步回调处理器，{}:{}",messageBody.bizType,JSON.toJSONString(messageBody));
             }else{

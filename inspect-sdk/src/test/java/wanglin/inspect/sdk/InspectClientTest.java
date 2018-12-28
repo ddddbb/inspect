@@ -33,7 +33,7 @@ public class InspectClientTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        Thread.sleep(10000);
+//        Thread.sleep(10000);
     }
 
     @Test
