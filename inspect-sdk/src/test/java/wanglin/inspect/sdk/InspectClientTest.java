@@ -24,7 +24,7 @@ public class InspectClientTest {
 
 
     @Test
-    public void sync() {
+    public void sync() throws InterruptedException {
         try {
             Object obj = inspectClient.sync("test",10000,new HashMap());
             int i = 1;
@@ -33,6 +33,7 @@ public class InspectClientTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
+        Thread.sleep(10000);
     }
 
     @Test

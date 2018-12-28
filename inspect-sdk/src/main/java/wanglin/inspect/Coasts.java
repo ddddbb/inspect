@@ -13,6 +13,7 @@ public interface Coasts {
 
     public interface CACHE {
         String CONTEXT_STATUS = "/context_status/";
+        String SYNC_SWITCH = "/inspect/switch/";
     }
 
     public interface Ctx {
