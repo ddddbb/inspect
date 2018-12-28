@@ -20,21 +20,21 @@ import wanglin.inspect.Coasts;
 import wanglin.inspect.InspectService;
 
 import java.io.IOException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 
 public class InspectClient implements InitializingBean, ApplicationContextAware {
     Logger log = LoggerFactory.getLogger(getClass());
-    private Cache<Long, ThreadHolder> syncMap           = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(1000, TimeUnit.SECONDS).build();
+    private Cache<Long, ThreadHolder> syncMap = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(10000, TimeUnit.SECONDS).build();
 
-    private SnowflakeIdWorker         snowflakeIdWorker = new SnowflakeIdWorker(0, 0);
-    private ApplicationContext        applicationContext;
-    private InspectService            inspectService;
-    private RedissonClient            redisson;
-    private RedisTemplate             redisTemplate;
+    private SnowflakeIdWorker  snowflakeIdWorker = new SnowflakeIdWorker(0, 0);
+    private ApplicationContext applicationContext;
+    private InspectService     inspectService;
+    private RedissonClient     redisson;
+    private RedisTemplate      redisTemplate;
 
     public Object sync(String bizType, Integer timeout, Object object) throws IOException, TimeoutException {
         long sequence = snowflakeIdWorker.nextId();
@@ -90,7 +90,16 @@ public class InspectClient implements InitializingBean, ApplicationContextAware 
     }
 
     public void signal(Long sequence, Object data) {
-
+        try {
+            syncMap.get(sequence, new Callable<ThreadHolder>() {
+                @Override
+                public ThreadHolder call() throws Exception {
+                    return null;
+                }
+            }).signal(data) ;
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
     }
 
     public MessageBody convertMessage(Message message) {
@@ -98,26 +107,47 @@ public class InspectClient implements InitializingBean, ApplicationContextAware 
     }
 
 
-
     class ThreadHolder {
-        private final Long    sequence;
-        private       Integer timeout;
-        private       Object  data;
-        private       RLock   lock;
+        private Long      sequence;
+        private Condition condition;
+        private Integer   timeout;
+        private Object    data;
+        private Lock      lock;
 
 
         public ThreadHolder(Long sequence, Integer timeout) {
             this.timeout = timeout;
             this.sequence = sequence;
-            this.lock = redisson.getLock(Coasts.CACHE.SYNC_SWITCH + sequence);
+            this.lock = new ReentrantLock();
+            this.condition = lock.newCondition();
         }
 
         public void await() throws TimeoutException {
-
+            try {
+                lock.lock();
+                if (!condition.await(timeout, TimeUnit.MILLISECONDS)) {
+                    throw new TimeoutException();
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+                //这一行基本不会出问题，异常吃了吧
+            } finally {
+                lock.unlock();
+            }
         }
 
         public Object get() {
             return data;
+        }
+
+        public void signal(Object data) {
+            try {
+                lock.lock();
+                this.data = data;
+                this.condition.signal();
+            }finally {
+                lock.unlock();
+            }
         }
     }
 }
