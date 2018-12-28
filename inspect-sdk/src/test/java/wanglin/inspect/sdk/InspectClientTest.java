@@ -25,6 +25,7 @@ public class InspectClientTest {
 
     @Test
     public void sync() throws InterruptedException {
+        for(int z = 0;z<30;z++)
         try {
             Object obj = inspectClient.sync("test",10000,new HashMap());
             int i = 1;

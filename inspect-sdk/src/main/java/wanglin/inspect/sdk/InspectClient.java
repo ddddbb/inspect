@@ -28,7 +28,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class InspectClient implements InitializingBean, ApplicationContextAware {
     Logger log = LoggerFactory.getLogger(getClass());
-    private Cache<Long, ThreadHolder> syncMap = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(10000, TimeUnit.SECONDS).build();
+    private Cache<Long, ThreadHolder>            syncMap          = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(10000, TimeUnit.SECONDS).build();
+    private ConcurrentMap<String, AsyncCallback> asyncCallbackMap = new ConcurrentHashMap<String, AsyncCallback>();
 
     private SnowflakeIdWorker  snowflakeIdWorker = new SnowflakeIdWorker(0, 0);
     private ApplicationContext applicationContext;
@@ -38,14 +39,14 @@ public class InspectClient implements InitializingBean, ApplicationContextAware 
 
     public Object sync(String bizType, Integer timeout, Object object) throws IOException, TimeoutException {
         long sequence = snowflakeIdWorker.nextId();
+        ThreadHolder threadHolder = new ThreadHolder(sequence, timeout);
         try {
+            syncMap.put(sequence, threadHolder);
             inspectService.inspect(bizType, sequence, object);
         } catch (RpcException e) {
             throw new IOException(e);
         }
         try {
-            ThreadHolder threadHolder = new ThreadHolder(sequence, timeout);
-            syncMap.put(sequence, threadHolder);
             threadHolder.await();
             return threadHolder.get();
         } finally {
@@ -85,24 +86,31 @@ public class InspectClient implements InitializingBean, ApplicationContextAware 
         this.applicationContext = applicationContext;
     }
 
-    public boolean isLocalSync(Long sequence) {
-        return syncMap.asMap().containsKey(sequence);
-    }
-
-    public void signal(Long sequence, Object data) {
-        try {
-            syncMap.get(sequence, new Callable<ThreadHolder>() {
-                @Override
-                public ThreadHolder call() throws Exception {
-                    return null;
-                }
-            }).signal(data) ;
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+    public void signal(Message message) {
+        MessageBody messageBody = convertMessage(message);
+        if (syncMap.asMap().containsKey(messageBody.sequence)) {
+            log.info("同步回调：{}", JSON.toJSONString(messageBody));
+            try {
+                syncMap.get(messageBody.sequence, new Callable<ThreadHolder>() {
+                    @Override
+                    public ThreadHolder call() throws Exception {
+                        return null;
+                    }
+                }).signal(messageBody);
+            } catch (ExecutionException e) {
+                e.printStackTrace();
+            }
+        } else {
+            log.info("异步回调：{}", JSON.toJSONString(messageBody));
+            if (asyncCallbackMap.get(messageBody.bizType) == null) {
+                log.error("无异步回调处理器，{}:{}", messageBody.bizType, JSON.toJSONString(messageBody));
+            } else {
+                asyncCallbackMap.get(messageBody.bizType).notify(messageBody);
+            }
         }
     }
 
-    public MessageBody convertMessage(Message message) {
+    private MessageBody convertMessage(Message message) {
         return (MessageBody) redisTemplate.getValueSerializer().deserialize(message.getBody());
     }
 
@@ -145,7 +153,7 @@ public class InspectClient implements InitializingBean, ApplicationContextAware 
                 lock.lock();
                 this.data = data;
                 this.condition.signal();
-            }finally {
+            } finally {
                 lock.unlock();
             }
         }
