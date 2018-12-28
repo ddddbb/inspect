@@ -39,6 +39,7 @@ public class InspectClientTest {
 
     @Test
     public void async() {
+        for(int z = 0;z<30;z++)
         try {
             inspectClient.async("test",new HashMap());
         } catch (IOException e) {
