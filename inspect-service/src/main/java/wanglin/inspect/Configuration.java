@@ -24,8 +24,6 @@ public class Configuration implements InitializingBean, ApplicationContextAware 
     ConcurrentMap<String, BizType>   bizTypeCache = new ConcurrentHashMap<>();
     @Autowired
     AnyTrueResultProcessor defaultResultProcessor;
-    @Autowired
-    RedisCallbackProcessor defaultCallbackProcessor;
     EngineService elEngine = new ELEngineService();
     private ApplicationContext applicationContext;
 

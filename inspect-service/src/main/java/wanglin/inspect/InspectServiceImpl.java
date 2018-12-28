@@ -1,13 +1,13 @@
 package wanglin.inspect;
 
 
+import com.alibaba.fastjson.JSON;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
+import wanglin.inspect.sdk.MessageBody;
 import wanglin.inspect.sdk.SnowflakeIdWorker;
 
 import java.util.Set;
@@ -22,8 +22,6 @@ public class InspectServiceImpl implements InspectService {
     ContextService contextService;
     @Autowired
     RedisTemplate  redisTemplate;
-    @Autowired
-    RedisCallbackProcessor callbackProcessor;
 
     @Override
     public void inspect(String bizType, Long sequence, Object request) {
@@ -37,6 +35,18 @@ public class InspectServiceImpl implements InspectService {
                 varValueNotify(context.sequence, var.name, ee);
             }
         });
+        waitForResult();
+        log.info("{}检测结果:{}", context.sequence, JSON.toJSONString(context.result));
+        redisTemplate.convertAndSend(Coasts.TOPIC.INSPECT_RESULT, new MessageBody(
+                context.bizType.name,
+                context.sequence,
+                context.result
+        ));
+        //todo 这里有问题
+    }
+
+    private void waitForResult() {
+
     }
 
     @Override
@@ -56,7 +66,7 @@ public class InspectServiceImpl implements InspectService {
                 log.info("规则{}结果:{}", rule.id, task);
             });
             if (!context.hasCallback()) {
-                callbackProcessor.callback(context);
+//                callbackProcessor.callback(context);
             }
         }
     }
