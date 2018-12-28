@@ -6,6 +6,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
+import org.springframework.data.redis.listener.ChannelTopic;
+import org.springframework.data.redis.listener.RedisMessageListenerContainer;
+import org.springframework.util.Assert;
 
 /**
  * 使用redis作为风控消息的MQ服务器
@@ -14,6 +17,7 @@ import org.springframework.data.redis.connection.MessageListener;
  */
 public class RedisMessageListener implements MessageListener, InitializingBean, ApplicationContextAware {
     private InspectClient      inspectClient;
+    private String             channel;
     private ApplicationContext applicationContext;
 
 
@@ -36,7 +40,14 @@ public class RedisMessageListener implements MessageListener, InitializingBean, 
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        this.inspectClient = applicationContext.getBean(InspectClient.class); ;
+        this.inspectClient = applicationContext.getBean(InspectClient.class);
+        RedisMessageListenerContainer redisMessageListenerContainer = applicationContext.getBean(RedisMessageListenerContainer.class);
+        Assert.notNull(redisMessageListenerContainer,"请初始化RedisMessageListenerContainer");
+        Assert.notNull(channel,"请初始化channel");
+        redisMessageListenerContainer.addMessageListener(this, new ChannelTopic(channel));
     }
 
+    public void setChannel(String channel) {
+        this.channel = channel;
+    }
 }
