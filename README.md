@@ -60,6 +60,38 @@
 
 inpsectService.inspect(bizCode,bizRequest)
 
+# 规则引擎扩展
+内置简单规则引擎实现表达式类规则
+
+Groovy规则引擎实现脚本类规则
+
+可以自行扩展EngineSerivice来扩展规则引擎的实现
+
+# 数据接入的扩展
+可以用过扩展DataService接口来实现数据加入的扩展
+
+比如为业务码test配置数据 user  对应的接入脚本为userHandler
+并在数据库表var中配置 test ,user userHanlder
+
+userHander脚本如下
+
+public class UserHandler implements DataService {
+
+    @Autowired
+    InspectService inspectService;
+    @Override
+    public void fetch(Long sequence, String varName, BizType bizType, Object request) {
+        Map<String,Object> map = new HashMap<>();
+        map.put("name","zhangsan");
+        map.put("age",10);
+        inspectService.varNotify(sequence,varName,map);
+    }
+
+    @Override
+    public String name() {
+        return "userHandler";
+    }
+}
 
  
 
