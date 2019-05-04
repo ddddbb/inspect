@@ -1,0 +1,2 @@
+bizTypeCode,id,name,handlerName
+simpleRuleTest,1,user,userHandler

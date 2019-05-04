@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="white-bg">
+<div class="wrapper wrapper-content animated fadeInRight ibox-content">
+	<form class="form-horizontal m" id="form-rule-edit">
+		<div class="form-group">
+			<label class="col-sm-3 control-label ">业务类型：</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" name="bizCode" id="bizCode"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-3 control-label ">规则名称：</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" name="name" id="name"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-3 control-label ">规则类型：</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" name="engine" id="engine"/>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="col-sm-3 control-label ">结果处理策略：</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" name="resultStrategy" id="resultStrategy"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-3 control-label ">结果返回字段：</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" name="resultField" id="resultField"/>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="col-sm-3 control-label">备注：</label>
+			<div class="col-sm-8">
+				<input id="remark" type="text" name="remark" class="form-control"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-3 control-label ">规则：</label>
+			<div class="col-sm-8">
+				<textarea class="form-control" name="context" id="context"></textarea>
+			</div>
+		</div>
+	</form>
+</div>
+<div th:include="include::footer"></div>
+<script type="text/javascript">
+	var prefix = ctx + "rule";
+
+	$("#form-rule-edit").validate({
+		rules:{
+			bizCode:{ required:true },
+			name:{ required:true },
+			engine:{ required:true },
+			context:{ required:true },
+			resultStrategy:{ required:true },
+			resultField:{ required:true },
+			remark:{ required:true },
+		}
+	});
+
+	function submitHandler() {
+		if ($.validate.form()) {
+			$.operate.save(prefix + "/add", $('#form-rule-edit').serialize());
+		}
+	}
+</script>
+</body>
+</html>

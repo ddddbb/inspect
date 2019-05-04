@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wanglin.domain.OrgMapper">
+
+    <resultMap type="Org" id="OrgResult">
+        <id property="orgCode" column="org_code"/>
+        <result property="name" column="name"/>
+        <result property="apikey" column="apikey"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="get" parameterType="String" resultMap="OrgResult">
+       select * from sys_org where org_code = #{orgCode}
+    </select>
+    <select id="selectOrg" parameterType="Org" resultMap="OrgResult">
+        select * from sys_org
+        <where>
+            <if test="orgCode !=null">
+                and org_code = #{orgCode}
+            </if>
+            <if test="name !=null and name != ''">
+                and name = #{name}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertOrg" parameterType="Org">
+        insert into sys_org (
+        <if test="orgCode != null and orgCode != '' ">org_code,</if>
+        <if test="name != null and name != '' ">name,</if>
+        <if test="createBy != null and createBy != ''">create_by,</if>
+        <if test="apikey != null and apikey != ''">apikey,</if>
+        <if test="remark != null and remark != ''">remark,</if>
+        create_time,del_flag
+        )values(
+        <if test="orgCode != null and orgCode != ''">#{orgCode},</if>
+        <if test="name != null and name != ''">#{name},</if>
+        <if test="createBy != null and createBy != ''">#{createBy},</if>
+        <if test="apikey != null and apikey != ''">#{apikey},</if>
+        <if test="remark != null and remark != ''">#{remark},</if>
+        now(),'0'
+        )
+    </insert>
+
+    <update id="updateOrg" parameterType="Org">
+        update sys_org
+        <set>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="apikey != null and apikey != ''">apikey = #{apikey},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = now()
+        </set>
+        where org_code = #{orgCode}
+    </update>
+
+    <delete id="disableOrgs" parameterType="String">
+        update sys_org set del_flag = '1' WHERE org_code in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+</mapper>

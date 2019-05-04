@@ -7,11 +7,19 @@
     <groupId>wanglin</groupId>
     <artifactId>inspect</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
 
 
     <modules>
         <module>inspect-sdk</module>
-        <module>inspect-service</module>
+        <module>inspect-api</module>
+        <module>inspect-core</module>
+        <module>inspect-component</module>
+        <module>inspect-repository</module>
+        <module>inspect-provider</module>
+        <module>inspect-ext</module>
+        <module>inspect-test</module>
         <module>inspect-web</module>
+        <module>stream-service</module>
     </modules>
 </project>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:task="http://www.springframework.org/schema/task"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd   http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+
+
+    <task:executor id="biztypePool" pool-size="1000" queue-capacity="2000" rejection-policy="DISCARD_OLDEST"/>
+    <task:executor id="inspectPool" pool-size="3" queue-capacity="10" rejection-policy="DISCARD_OLDEST"/>
+
+    <bean id="inspectService" class="wanglin.inspect.InspectService"/>
+
+    <context:component-scan base-package="wanglin.inspect.handler,wanglin.inspect.biz">
+        <context:include-filter type="assignable" expression="wanglin.inspect.DataService"/>
+        <context:include-filter type="assignable" expression="wanglin.inspect.BizTypeService"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Component"/>
+    </context:component-scan>
+
+
+
+</beans>

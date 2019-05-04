@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wanglin.domain.BiztypeMapper">
+
+    <resultMap type="Biztype" id="BiztypeResult">
+        <id property="code" column="code"/>
+        <result property="name" column="name"/>
+        <result property="notifyUrl" column="notify_url"/>
+        <result property="charset" column="charset"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="get" parameterType="String" resultMap="BiztypeResult">
+       select * from biztype where code = #{code}
+    </select>
+    <select id="selectBiztype" parameterType="Biztype" resultMap="BiztypeResult">
+        select * from biztype
+        <where>
+             and del_flag = '0'
+            <if test="code !=null">
+                and code = #{code}
+            </if>
+            <if test="name !=null and name != ''">
+                and name = #{name}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertBiztype" parameterType="Biztype">
+        insert into biztype (
+        <if test="code != null and code != '' ">code,</if>
+        <if test="name != null and name != '' ">name,</if>
+        <if test="notifyUrl != null and notifyUrl != '' ">notify_url,</if>
+        <if test="charset != null and charset != '' ">charset,</if>
+        <if test="createBy != null and createBy != ''">create_by,</if>
+        <if test="remark != null and remark != ''">remark,</if>
+        create_time,del_flag
+        )values(
+        <if test="code != null and code != ''">#{code},</if>
+        <if test="name != null and name != ''">#{name},</if>
+        <if test="notifyUrl != null and notifyUrl != ''">#{notifyUrl},</if>
+        <if test="charset != null and charset != ''">#{charset},</if>
+        <if test="createBy != null and createBy != ''">#{createBy},</if>
+        <if test="remark != null and remark != ''">#{remark},</if>
+        now(),'0'
+        )
+    </insert>
+
+    <update id="updateBiztype" parameterType="Biztype">
+        update biztype
+        <set>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="notifyUrl != null and notifyUrl != ''">notify_url = #{notifyUrl},</if>
+            <if test="charset != null and charset != ''">charset = #{charset},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = now()
+        </set>
+        where code = #{code}
+    </update>
+
+    <delete id="disableBiztypes" parameterType="String">
+        update biztype set del_flag = '1' WHERE code in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+</mapper>

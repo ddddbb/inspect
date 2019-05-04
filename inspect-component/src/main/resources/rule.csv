@@ -1,0 +1,17 @@
+bizTypeCode,id,name,context,engine,ruleResultStrategy,resultField
+simpleRuleTest,1,用户黑名单单,user.name == 'zhangsan',EXPRESSION,IfTrueReject,reject
+simpleRuleTest,2,金额大于5000,req.amt > 5000,EXPRESSION,IfTrueReject,reject
+simpleRuleTest,3,评分表,"package wanglin.inspect.engine.groovy;
+
+import wanglin.inspect.Var;
+
+import java.util.List;
+
+public class TestScript implements ScriptRule {
+
+    @Override
+    public Object execute(List<Var> vars) {
+        return ""11111"";
+    }
+}
+",SCRIPT,AllOverCallback,score

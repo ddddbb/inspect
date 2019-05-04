@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wanglin.domain.DataMapper">
+
+    <resultMap type="Data" id="DataResult">
+        <id property="bizCode" column="bizcode"/>
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="handlerName" column="handler_name"/>
+        <result property="remark" column="remark"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="get" parameterType="Long" resultMap="DataResult">
+        select * from data where id = #{id}
+    </select>
+    <select id="selectData" parameterType="Data" resultMap="DataResult">
+        select * from data
+        <where>
+            <if test="name !=null and name != ''">
+                and name = #{name}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertData" parameterType="Data">
+        insert into data (
+        <if test="bizCode != null and bizCode != '' ">bizcode,</if>
+        <if test="name != null and name != '' ">name,</if>
+        <if test="handlerName != null and handlerName != '' ">handler_name,</if>
+        <if test="createBy != null and createBy != ''">create_by,</if>
+        <if test="remark != null and remark != ''">remark,</if>
+        create_time
+        )values(
+        <if test="bizCode != null and bizCode != ''">#{bizCode},</if>
+        <if test="name != null and name != ''">#{name},</if>
+        <if test="handlerName != null and handlerName != ''">#{handlerName},</if>
+        <if test="createBy != null and createBy != ''">#{createBy},</if>
+        <if test="remark != null and remark != ''">#{remark},</if>
+        now()
+        )
+    </insert>
+
+    <update id="updateData" parameterType="Data">
+        update data
+        <set>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="handlerName != null and handlerName != ''">handler_name = #{handlerName},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = now()
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteDatas" parameterType="Long">
+        delete from data where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+</mapper>

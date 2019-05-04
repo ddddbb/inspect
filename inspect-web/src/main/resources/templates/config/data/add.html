@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<meta charset="utf-8">
+<head th:include="include :: header"></head>
+<body class="white-bg">
+<div class="wrapper wrapper-content animated fadeInRight ibox-content">
+	<form class="form-horizontal m" id="form-data-edit">
+		<div class="form-group">
+			<label class="col-sm-3 control-label ">结构码：</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" name="bizCode" id="bizCode"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-3 control-label ">变量名称：</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" name="name" id="name"/>
+			</div>
+		</div>
+		<div class="form-group">
+			<label class="col-sm-3 control-label ">执行器：</label>
+			<div class="col-sm-8">
+				<input class="form-control" type="text" name="handlerName" id="handlerName"/>
+			</div>
+		</div>
+
+		<div class="form-group">
+			<label class="col-sm-3 control-label">备注：</label>
+			<div class="col-sm-8">
+				<textarea id="remark" name="remark" class="form-control"></textarea>
+			</div>
+		</div>
+	</form>
+</div>
+<div th:include="include::footer"></div>
+<script type="text/javascript">
+	var prefix = ctx + "data";
+
+	$("#form-data-edit").validate({
+		rules:{
+			bizCode:{ required:true },
+			name:{ required:true },
+			handlerName:{ required:true },
+			remark:{ required:true }
+		}
+	});
+
+	function submitHandler() {
+		if ($.validate.form()) {
+			$.operate.save(prefix + "/add", $('#form-data-edit').serialize());
+		}
+	}
+</script>
+</body>
+</html>

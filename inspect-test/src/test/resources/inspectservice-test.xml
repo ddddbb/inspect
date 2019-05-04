@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean class="wanglin.inspect.InspectService">
+
+    </bean>
+    <bean class="wanglin.inspect.mock.MockContextService"/>
+    <bean class="wanglin.inspect.mock.MockMessageTemplate"/>
+    <bean class="wanglin.inspect.mock.MockConfigProvider"/>
+
+    <bean class="wanglin.inspect.factory.EngineFactory"/>
+    <bean class="wanglin.inspect.factory.DataServiceFactory"/>
+
+    <bean class="wanglin.inspect.handler.UserHandler" id="userHandler"/>
+
+
+</beans>

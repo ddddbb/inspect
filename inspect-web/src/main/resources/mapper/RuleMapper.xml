@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.Rule//DTD Mapper 3.0//EN"
+        "http://mybatis.Rule/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.wanglin.domain.RuleMapper">
+
+    <resultMap type="Rule" id="RuleResult">
+        <id property="bizCode" column="bizcode"/>
+        <result property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="context" column="context"/>
+        <result property="engine" column="engine"/>
+        <result property="resultStrategy" column="result_strategy"/>
+        <result property="resultField" column="result_field"/>
+        <result property="delFlag" column="del_flag"/>
+        <result property="createBy" column="create_by"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateBy" column="update_by"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+
+    <select id="get" parameterType="Long" resultMap="RuleResult">
+       select * from rule where id = #{id}
+    </select>
+    <select id="selectRule" parameterType="Rule" resultMap="RuleResult">
+        select * from rule
+        <where>
+            <if test="bizCode !=null">
+                and bizcode = #{bizCode}
+            </if>
+            <if test="name !=null and name != ''">
+                and name = #{name}
+            </if>
+        </where>
+    </select>
+
+    <insert id="insertRule" parameterType="Rule">
+        insert into rule (
+        <if test="bizCode != null and bizCode != '' ">bizcode,</if>
+        <if test="name != null and name != '' ">name,</if>
+        <if test="context != null and context != '' ">context,</if>
+        <if test="engine != null and engine != '' ">engine,</if>
+        <if test="resultStrategy != null and resultStrategy != '' ">result_strategy,</if>
+        <if test="resultField != null and resultField != '' ">result_field,</if>
+        <if test="createBy != null and createBy != ''">create_by,</if>
+        <if test="remark != null and remark != ''">remark,</if>
+        create_time,del_flag
+        )values(
+        <if test="bizCode != null and bizCode != ''">#{bizCode},</if>
+        <if test="name != null and name != ''">#{name},</if>
+        <if test="context != null and context != ''">#{context},</if>
+        <if test="engine != null and engine != ''">#{engine},</if>
+        <if test="resultStrategy != null and resultStrategy != ''">#{resultStrategy},</if>
+        <if test="resultField != null and resultField != ''">#{resultField},</if>
+        <if test="createBy != null and createBy != ''">#{createBy},</if>
+        <if test="remark != null and remark != ''">#{remark},</if>
+        now(),'0'
+        )
+    </insert>
+
+    <update id="updateRule" parameterType="Rule">
+        update rule
+        <set>
+            <if test="name != null and name != ''">name = #{name},</if>
+            <if test="context != null and context != ''">context = #{context},</if>
+            <if test="engine != null and engine != ''">engine = #{engine},</if>
+            <if test="resultStrategy != null and resultStrategy != ''">result_strategy = #{resultStrategy},</if>
+            <if test="resultField != null and resultField != ''">resultField = #{result_field},</if>
+            <if test="updateBy != null and updateBy != ''">update_by = #{updateBy},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            update_time = now()
+        </set>
+        where id = #{id}
+    </update>
+
+    <delete id="disableRules" parameterType="Long">
+        update rule set del_flag = '1' WHERE id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+
+</mapper>

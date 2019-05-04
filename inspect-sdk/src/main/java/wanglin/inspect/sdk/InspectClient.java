@@ -1,158 +1,34 @@
 package wanglin.inspect.sdk;
 
-import com.alibaba.dubbo.rpc.RpcException;
-import com.alibaba.fastjson.JSON;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import org.redisson.api.RedissonClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-import org.springframework.data.redis.connection.Message;
-import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.util.Assert;
-import wanglin.inspect.InspectService;
 
 import java.io.IOException;
-import java.util.concurrent.*;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.nio.charset.Charset;
 
-
-public class InspectClient implements InitializingBean, ApplicationContextAware {
+public abstract class InspectClient {
     Logger log = LoggerFactory.getLogger(getClass());
-    private Cache<Long, ThreadHolder>            syncMap          = CacheBuilder.newBuilder().maximumSize(100000).expireAfterWrite(10000, TimeUnit.SECONDS).build();
-    private ConcurrentMap<String, AsyncCallback> asyncCallbackMap = new ConcurrentHashMap<String, AsyncCallback>();
 
-    private SnowflakeIdWorker  snowflakeIdWorker = new SnowflakeIdWorker(0, 0);
-    private ApplicationContext applicationContext;
-    private InspectService     inspectService;
-    private RedissonClient     redisson;
-    private RedisTemplate      redisTemplate;
+    HttpUtils httpUtils = new HttpUtils();
+    String    url;
+    Charset   charset;
 
-    public Object sync(String bizType, Integer timeout, Object object) throws IOException, TimeoutException {
-        long sequence = snowflakeIdWorker.nextId();
-        ThreadHolder threadHolder = new ThreadHolder(sequence, timeout);
-        try {
-            syncMap.put(sequence, threadHolder);
-            inspectService.inspect(bizType, sequence, object);
-        } catch (RpcException e) {
-            throw new IOException(e);
-        }
-        try {
-            threadHolder.await();
-            return threadHolder.get();
-        } finally {
-            syncMap.invalidate(sequence);
-        }
+
+    public InspectClient(String url, String charset) {
+        this.url = url;
     }
 
-    public void async(String bizType, Object object) throws IOException {
-        long sequence = snowflakeIdWorker.nextId();
-        try {
-            inspectService.inspect(bizType, sequence, object);
-        } catch (RpcException e) {
-            throw new IOException(e);
-        }
+    public Object sync(String apikey, String bizType, Object object) throws IOException {
+        String syncUrl = String.format(url + "/sync?biztype=%s&apikey=%s", bizType, apikey);
+        return httpUtils.postJson(syncUrl, object, charset);
     }
 
-    public void query(long sequence) throws IOException {
-        try {
-            inspectService.query(sequence);
-        } catch (RpcException e) {
-            throw new IOException(e);
-        }
+    public void async(String apikey, String bizType, Object object) throws IOException {
+            String asyncUrl = String.format(url + "/sync?biztype=%s&apikey=%s", bizType, apikey);
+            httpUtils.postJson(asyncUrl, object, charset);
     }
 
-    @Override
-    public void afterPropertiesSet() throws Exception {
-        this.inspectService = applicationContext.getBean(InspectService.class);
-        this.redisson = applicationContext.getBean(RedissonClient.class);
-        this.redisTemplate = applicationContext.getBean("redisTemplate", RedisTemplate.class);
-        Assert.notNull(redisson, "请初始化RedissonClient");
-        Assert.notNull(redisTemplate, "请初始化RedisTemplate");
-        Assert.notNull(inspectService, "请初始化Dubbo reference : InspectService");
-    }
-
-    @Override
-    public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
-    }
-
-    public void signal(Message message) {
-        MessageBody messageBody = convertMessage(message);
-        if (syncMap.asMap().containsKey(messageBody.sequence)) {
-            log.info("同步回调：{}", JSON.toJSONString(messageBody));
-            try {
-                syncMap.get(messageBody.sequence, new Callable<ThreadHolder>() {
-                    @Override
-                    public ThreadHolder call() throws Exception {
-                        return null;
-                    }
-                }).signal(messageBody);
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        } else {
-            log.info("异步回调：{}", JSON.toJSONString(messageBody));
-            if (asyncCallbackMap.get(messageBody.bizType) == null) {
-                log.error("无异步回调处理器，{}:{}", messageBody.bizType, JSON.toJSONString(messageBody));
-            } else {
-                asyncCallbackMap.get(messageBody.bizType).notify(messageBody);
-            }
-        }
-    }
-
-    private MessageBody convertMessage(Message message) {
-        return (MessageBody) redisTemplate.getValueSerializer().deserialize(message.getBody());
-    }
+    public abstract void onMessage(String biztype, Object result);
 
 
-    class ThreadHolder {
-        private Long      sequence;
-        private Condition condition;
-        private Integer   timeout;
-        private Object    data;
-        private Lock      lock;
-
-
-        public ThreadHolder(Long sequence, Integer timeout) {
-            this.timeout = timeout;
-            this.sequence = sequence;
-            this.lock = new ReentrantLock();
-            this.condition = lock.newCondition();
-        }
-
-        public void await() throws TimeoutException {
-            try {
-                lock.lock();
-                if (!condition.await(timeout, TimeUnit.MILLISECONDS)) {
-                    throw new TimeoutException();
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-                //这一行基本不会出问题，异常吃了吧
-            } finally {
-                lock.unlock();
-            }
-        }
-
-        public Object get() {
-            return data;
-        }
-
-        public void signal(Object data) {
-            try {
-                lock.lock();
-                this.data = data;
-                this.condition.signal();
-            } finally {
-                lock.unlock();
-            }
-        }
-    }
 }
